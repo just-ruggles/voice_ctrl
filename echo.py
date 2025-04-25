@@ -8,12 +8,11 @@ import time
 import paho.mqtt.client as paho
 import json
 
-# 🌄 Fondo y estilos
-st.markdown(
-    """
+# 🎨 Estilos personalizados
+st.markdown("""
     <style>
     .stApp {
-        background-image: url("https://media.sidefx.com/uploads/multiverse.jpg");
+        background-image: url("https://i.redd.it/cq8btdxz1x2b1.jpg");
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
@@ -22,27 +21,26 @@ st.markdown(
         font-size: 40px;
         color: red;
         font-weight: bold;
+        margin-bottom: 10px;
     }
     .custom-subheader {
         font-size: 28px;
         color: white;
         font-weight: bold;
-        margin-bottom: 20px;
+        margin-bottom: 30px;
     }
-    .stButton>button {
-        color: white;
-        background-color: #007BFF;
-        border-radius: 10px;
-        padding: 0.5em 1em;
+    .bk-root .bk-btn {
+        background-color: #007BFF !important;
+        color: white !important;
         font-weight: bold;
+        border-radius: 10px;
+        padding: 10px 20px;
         font-size: 18px;
     }
     </style>
-    """,
-    unsafe_allow_html=True
-)
+""", unsafe_allow_html=True)
 
-# 🌟 Encabezados personalizados
+# 🏷️ Títulos
 st.markdown('<div class="custom-title">INTERFACES MULTIMODALES</div>', unsafe_allow_html=True)
 st.markdown('<div class="custom-subheader">CONTROL POR VOZ</div>', unsafe_allow_html=True)
 
@@ -50,16 +48,16 @@ st.markdown('<div class="custom-subheader">CONTROL POR VOZ</div>', unsafe_allow_
 image = Image.open('voice_ctrl.jpg')
 st.image(image, width=200)
 
-# 🔘 Instrucción
-st.write("🎙️ Toca el botón y habla")
+# 🎤 Botón e instrucción
+st.write("🎙️ Toca el botón y habla:")
 
-# 🎤 Botón Bokeh para reconocimiento de voz
-stt_button = Button(label=" 🎤 Inicio ", width=200)
+stt_button = Button(label="🎤 Inicio", width=200)
+
 stt_button.js_on_event("button_click", CustomJS(code="""
     var recognition = new webkitSpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true;
- 
+
     recognition.onresult = function (e) {
         var value = "";
         for (var i = e.resultIndex; i < e.results.length; ++i) {
@@ -74,7 +72,6 @@ stt_button.js_on_event("button_click", CustomJS(code="""
     recognition.start();
 """))
 
-# 🔄 Recepción del evento de voz
 result = streamlit_bokeh_events(
     stt_button,
     events="GET_TEXT",
@@ -84,7 +81,7 @@ result = streamlit_bokeh_events(
     debounce_time=0
 )
 
-# 📡 MQTT Configuración
+# 📡 MQTT Config
 broker = "157.230.214.127"
 port = 1883
 client1 = paho.Client("GIT-HUBC")
@@ -99,19 +96,18 @@ def on_message(client, userdata, message):
 
 client1.on_message = on_message
 
-# 🚀 Enviar voz al broker MQTT
+# 🚀 Publicar voz detectada
 if result and "GET_TEXT" in result:
-    texto_hablado = result.get("GET_TEXT").strip()
-    st.success(f"🗣️ Reconocido: {texto_hablado}")
+    texto = result.get("GET_TEXT").strip()
+    st.success(f"🗣️ Detectado: {texto}")
 
     client1.on_publish = on_publish
     client1.connect(broker, port)
-    message = json.dumps({"Act1": texto_hablado})
+    message = json.dumps({"Act1": texto})
     client1.publish("voice_ctrl", message)
 
-    # 📁 Crear carpeta temp si no existe
+    # 🗂️ Crear carpeta si no existe
     try:
         os.mkdir("temp")
     except:
         pass
-
