@@ -25,7 +25,7 @@ st.markdown(
     }
     .custom-subheader {
         font-size: 28px;
-        color: #007BFF;
+        color: white;
         font-weight: bold;
         margin-bottom: 20px;
     }
