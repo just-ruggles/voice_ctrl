@@ -5,43 +5,56 @@ from bokeh.models import CustomJS
 from streamlit_bokeh_events import streamlit_bokeh_events
 from PIL import Image
 import time
-import glob
 import paho.mqtt.client as paho
 import json
-from gtts import gTTS
-from googletrans import Translator
 
-def on_publish(client,userdata,result):             #create function for callback
-    print("el dato ha sido publicado \n")
-    pass
+# 🌄 Fondo y estilos
+st.markdown(
+    """
+    <style>
+    .stApp {
+        background-image: url("https://preview.redd.it/spider-verse-portal-wallpaper-v0-0o1jvz8hjfie1.jpeg?auto=webp&s=ade4bc1fee3aee0f1a10c12090829d2c167827fd");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+    }
+    .custom-title {
+        font-size: 40px;
+        color: red;
+        font-weight: bold;
+    }
+    .custom-subheader {
+        font-size: 28px;
+        color: #007BFF;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+    .stButton>button {
+        color: white;
+        background-color: #007BFF;
+        border-radius: 10px;
+        padding: 0.5em 1em;
+        font-weight: bold;
+        font-size: 18px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
-def on_message(client, userdata, message):
-    global message_received
-    time.sleep(2)
-    message_received=str(message.payload.decode("utf-8"))
-    st.write(message_received)
+# 🌟 Encabezados personalizados
+st.markdown('<div class="custom-title">INTERFACES MULTIMODALES</div>', unsafe_allow_html=True)
+st.markdown('<div class="custom-subheader">CONTROL POR VOZ</div>', unsafe_allow_html=True)
 
-broker="157.230.214.127"
-port=1883
-client1= paho.Client("GIT-HUBC")
-client1.on_message = on_message
-
-
-
-st.title("INTERFACES MULTIMODALES")
-st.subheader("CONTROL POR VOZ")
-
+# 🖼️ Imagen
 image = Image.open('voice_ctrl.jpg')
-
 st.image(image, width=200)
 
+# 🔘 Instrucción
+st.write("🎙️ Toca el botón y habla")
 
-
-
-st.write("Toca el Botón y habla ")
-
-stt_button = Button(label=" Inicio ", width=200)
-
+# 🎤 Botón Bokeh para reconocimiento de voz
+stt_button = Button(label=" 🎤 Inicio ", width=200)
 stt_button.js_on_event("button_click", CustomJS(code="""
     var recognition = new webkitSpeechRecognition();
     recognition.continuous = true;
@@ -54,31 +67,51 @@ stt_button.js_on_event("button_click", CustomJS(code="""
                 value += e.results[i][0].transcript;
             }
         }
-        if ( value != "") {
+        if (value != "") {
             document.dispatchEvent(new CustomEvent("GET_TEXT", {detail: value}));
         }
     }
     recognition.start();
-    """))
+"""))
 
+# 🔄 Recepción del evento de voz
 result = streamlit_bokeh_events(
     stt_button,
     events="GET_TEXT",
     key="listen",
     refresh_on_update=False,
     override_height=75,
-    debounce_time=0)
+    debounce_time=0
+)
 
-if result:
-    if "GET_TEXT" in result:
-        st.write(result.get("GET_TEXT"))
-        client1.on_publish = on_publish                            
-        client1.connect(broker,port)  
-        message =json.dumps({"Act1":result.get("GET_TEXT").strip()})
-        ret= client1.publish("voice_ctrl", message)
+# 📡 MQTT Configuración
+broker = "157.230.214.127"
+port = 1883
+client1 = paho.Client("GIT-HUBC")
 
-    
+def on_publish(client, userdata, result):
+    print("El dato ha sido publicado.")
+
+def on_message(client, userdata, message):
+    time.sleep(2)
+    message_received = str(message.payload.decode("utf-8"))
+    st.write("📥 Mensaje recibido:", message_received)
+
+client1.on_message = on_message
+
+# 🚀 Enviar voz al broker MQTT
+if result and "GET_TEXT" in result:
+    texto_hablado = result.get("GET_TEXT").strip()
+    st.success(f"🗣️ Reconocido: {texto_hablado}")
+
+    client1.on_publish = on_publish
+    client1.connect(broker, port)
+    message = json.dumps({"Act1": texto_hablado})
+    client1.publish("voice_ctrl", message)
+
+    # 📁 Crear carpeta temp si no existe
     try:
         os.mkdir("temp")
     except:
         pass
+
