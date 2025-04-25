@@ -12,7 +12,7 @@ import json
 st.markdown("""
     <style>
     .stApp {
-        background-image: url("https://i.redd.it/cq8btdxz1x2b1.jpg");
+        background-image: url("https://media.sidefx.com/uploads/multiverse.jpg");
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
