@@ -13,7 +13,7 @@ st.markdown(
     """
     <style>
     .stApp {
-        background-image: url("https://preview.redd.it/spider-verse-portal-wallpaper-v0-0o1jvz8hjfie1.jpeg?auto=webp&s=ade4bc1fee3aee0f1a10c12090829d2c167827fd");
+        background-image: url("https://media.sidefx.com/uploads/multiverse.jpg");
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
